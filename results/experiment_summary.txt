@@ -1,0 +1,91 @@
+SMART QoS SDN PROJECT - EXPERIMENT SUMMARY
+
+1. TEST ENVIRONMENT
+Operating System: Ubuntu 22.04.5 LTS on WSL2
+SDN Controller: Ryu 4.34
+Network Emulator: Mininet 2.3.0
+Switch: Open vSwitch 2.17.12
+OpenFlow Version: OpenFlow 1.3
+Traffic Generator: iperf3, ping
+Topology: Two hosts (h1 and h2) connected through switch s1
+
+2. QoS CONFIGURATION & CLASSIFICATION
+Parent QoS rate: 10 Mbps per configured switch port (Linux HTB on s1-eth1 and s1-eth2)
+Queue 1 (High Priority): Minimum 6 Mbps, maximum 8 Mbps
+Queue 2 (Normal Priority): Minimum 1 Mbps, default maximum 4 Mbps (dynamically expandable to 8 Mbps)
+
+Controller Traffic Classification:
+- ICMP (proto=1): High-priority Queue 1 (OpenFlow priority 20)
+- UDP (proto=17, VoIP/streaming): High-priority Queue 1 (OpenFlow priority 20)
+- TCP (proto=6, bulk data/web): Normal-priority Queue 2 (OpenFlow priority 10)
+- Other IPv4: Normal-priority Queue 2 (OpenFlow priority 10)
+- ARP / non-IP: Default forwarding (OpenFlow priority 5)
+- Table-miss: Output to controller (OpenFlow priority 0)
+
+3. DYNAMIC QoS ADAPTATION
+The dynamic monitoring script (scripts/dynamic_qos_monitor.py) dynamically resolves
+Queue 2 UUIDs from OVSDB, samples OpenFlow queue statistics every 5 seconds,
+and dynamically adjusts Queue 2's configured maximum rate:
+
+- Demand Surge Condition: When Queue 2 rate is >= 2.5 Mbps for 2 consecutive samples,
+  Queue 2 maximum rate expands from 4 Mbps to 8 Mbps (INCREASE_TO_8_MBPS).
+- Demand Idle Condition: When Queue 2 rate is <= 0.5 Mbps for 3 consecutive samples,
+  Queue 2 maximum rate returns from 8 Mbps to 4 Mbps (RESTORE_TO_4_MBPS).
+
+Recorded Events (from results/dynamic_qos_events.csv):
+- 2026-10-24T11:50:35: INCREASE_TO_8_MBPS (8 Mbps) -> 2026-10-24T11:51:19: RESTORE_TO_4_MBPS (4 Mbps)
+- 2026-10-24T22:02:58: INCREASE_TO_8_MBPS (8 Mbps) -> 2026-10-24T22:03:33: RESTORE_TO_4_MBPS (4 Mbps)
+- 2026-10-24T23:17:10: INCREASE_TO_8_MBPS (8 Mbps) -> 2026-10-24T23:18:05: RESTORE_TO_4_MBPS (4 Mbps)
+
+4. PERFORMANCE MEASUREMENT & ANALYSIS
+
+A. High-Priority Traffic Isolation Under Concurrent TCP Bulk Load:
+Source file: results/qos_ping_under_load.log (concurrent with results/qos_tcp_load.log)
+- Transmitted probes: 150 packets (sent over 30 seconds during active TCP saturation)
+- Received probes: 150 packets
+- Packet loss: 0.0%
+- Round-trip time:
+  * Minimum RTT: 0.044 ms
+  * Average RTT: 0.135 ms
+  * Maximum RTT: 3.884 ms
+  * Standard deviation (mdev): 0.309 ms
+Findings: By isolating ICMP/UDP in dedicated Queue 1 with reserved bandwidth,
+high-priority packets completely bypassed the buffer contention of Queue 2,
+achieving sub-millisecond average latency and zero packet loss.
+
+B. TCP Traffic Shaping and Dynamic Rate Adaptation:
+- Initial QoS State (results/tcp_test.log):
+  * Configured Queue 2 limit: 4.0 Mbps
+  * Measured sender throughput: 4.44 Mbps
+  * Measured receiver throughput: 3.83 Mbps
+  * Retransmissions: 0
+- Adapted QoS State (recorded under demand surge):
+  * Configured Queue 2 limit: 8.0 Mbps
+  * Measured sender throughput: 6.70 Mbps
+  * Measured receiver throughput: 6.22 Mbps
+  * Retransmissions: 0
+Findings: Dynamic adaptation yielded an immediate +62.4% gain in application
+receiver throughput (3.83 Mbps to 6.22 Mbps) by capitalizing on available link
+capacity while preserving Queue 1's minimum reservation.
+
+C. Evaluation of Previous Unconstrained Baseline:
+- The earlier test in results/tcp_baseline.log showed ~35.0 Gbps. Because that test
+  ran over an unconstrained virtual namespace loopback without link rate limits,
+  it represents raw virtualized memory bandwidth rather than a valid 10 Mbps
+  network baseline. Meaningful comparisons must evaluate initial vs adapted states
+  under identical 10 Mbps bottleneck conditions.
+
+5. GENERATED GRAPHS (results/graphs/)
+- 01_dynamic_qos_adaptation.png: Continuous time series of Queue 2 counter rate and configured max rate.
+- 02_adaptation_events.png: Timeline of state change events (4 Mbps <-> 8 Mbps).
+- 03_tcp_qos_throughput.png: Sender vs receiver throughput during 30s TCP test.
+- 04_qos_vs_baseline_comparison.png: High-priority RTT distribution under load and Initial vs Adapted throughput.
+
+All graphs are rendered at 300 DPI publication quality.
+
+6. CONCLUSION
+The Smart QoS Management system successfully demonstrates:
+1. OpenFlow 1.3 protocol-based traffic classification and multi-queue steering.
+2. Complete isolation and protection of latency-sensitive traffic during bulk link congestion.
+3. Automated, resilient dynamic bandwidth adaptation that expands and restores queue limits
+   based on real-time traffic demand.

@@ -1,0 +1,56 @@
+# Python virtual environments
+ryu-venv/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Python test and tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files and logs
+*.log
+*.tmp
+# Historical backups
+/backups/
+/wsgi.py.backup
+/controller/*backup*.py
+/controller/*before*.py
+/controller/*working*.py
+/results/source_backup/
+
+# Temporary and historical result files
+/results/*.bak
+/results/*.pre_final
+/scripts/*.bak
+/scripts/*.pre_final
+
+# Large raw telemetry data
+/results/flow_telemetry.csv
+
+# Temporary experiment logs
+/results/*.log
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+ryu-venv/
+venv/
+.env
+# Avoid duplicate graph files; retain final verification graphs
+/results/graphs/

@@ -1,0 +1,11 @@
+_uuid               : 191644e6-1f09-49a7-b793-e6e73b63ed92
+external_ids        : {}
+other_config        : {max-rate="10000000"}
+queues              : {1=dbf50e75-f10e-4359-96d0-4b4654dbdcc0, 2=cbd69a65-87dc-45df-9803-ba65cc8d4dbf}
+type                : linux-htb
+
+_uuid               : 6d57d2a3-734e-46f7-9519-fe2aa64dad0a
+external_ids        : {}
+other_config        : {max-rate="10000000"}
+queues              : {1=c17e038e-9be8-4475-a453-1c28a01ab082, 2=b443a722-ea4a-43e2-9bb9-d47f0bfd0b94}
+type                : linux-htb

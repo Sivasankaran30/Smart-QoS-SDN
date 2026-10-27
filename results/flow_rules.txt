@@ -1,0 +1,8 @@
+OFPST_FLOW reply (OF1.3) (xid=0x2):
+ cookie=0x0, duration=42957.895s, table=0, n_packets=191, n_bytes=18718, priority=20,icmp,in_port=1,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02 actions=set_queue:1,output:2
+ cookie=0x0, duration=42957.893s, table=0, n_packets=191, n_bytes=18718, priority=20,icmp,in_port=2,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01 actions=set_queue:1,output:1
+ cookie=0x0, duration=42697.417s, table=0, n_packets=2239, n_bytes=110883706, priority=10,tcp,in_port=1,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02 actions=set_queue:2,output:2
+ cookie=0x0, duration=42697.413s, table=0, n_packets=2204, n_bytes=15405730, priority=10,tcp,in_port=2,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01 actions=set_queue:2,output:1
+ cookie=0x0, duration=42957.897s, table=0, n_packets=14, n_bytes=588, priority=5,arp,in_port=2,dl_src=00:00:00:00:00:02,dl_dst=00:00:00:00:00:01 actions=output:1
+ cookie=0x0, duration=42952.814s, table=0, n_packets=13, n_bytes=546, priority=5,arp,in_port=1,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02 actions=output:2
+ cookie=0x0, duration=42968.729s, table=0, n_packets=31, n_bytes=2150, priority=0 actions=CONTROLLER:65535

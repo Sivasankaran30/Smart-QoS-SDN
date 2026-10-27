@@ -1,0 +1,7 @@
+timestamp,action,queue2_max_rate_mbps,reason
+2026-10-24T11:50:35,INCREASE_TO_8_MBPS,8,Sustained Queue 2 traffic demand
+2026-10-24T11:51:19,RESTORE_TO_4_MBPS,4,Queue 2 remained idle
+2026-10-24T22:02:58,INCREASE_TO_8_MBPS,8,Sustained Queue 2 traffic demand
+2026-10-24T22:03:33,RESTORE_TO_4_MBPS,4,Queue 2 remained idle
+2026-10-24T23:17:10,INCREASE_TO_8_MBPS,8,Sustained Queue 2 traffic demand
+2026-10-24T23:18:05,RESTORE_TO_4_MBPS,4,Queue 2 remained idle

@@ -1,0 +1,135 @@
+SMART QoS SDN PROJECT - FINAL VERIFICATION REPORT
+Generated at: 2026-10-25T14:27:30+05:30
+Project Directory: /home/msiva007/smart-qos
+
+================================================================================
+1. OVERALL STATUS: VERIFIED COMPLETE
+================================================================================
+
+================================================================================
+2. VERIFICATION TABLE
+================================================================================
+
+Criterion 1: Controller Initialization & Syntax
+- Result: PASS
+- Evidence: Controller syntax validated via py_compile; running under Ryu 4.34
+- Path: controller/smart_qos.py
+
+Criterion 2: OpenFlow 1.3 Protocol & Handshake
+- Result: PASS
+- Evidence: OFP version 1.3 configured; table-miss rule installed; DPID 1 registered
+- Path: controller/smart_qos.py, results/flow_rules.txt
+
+Criterion 3: MAC Learning & Packet Forwarding
+- Result: PASS
+- Evidence: Source MACs dynamically mapped to ports; h1 and h2 reach each other
+- Path: controller/smart_qos.py
+
+Criterion 4: Multi-Protocol Traffic Classification
+- Result: PASS
+- Evidence:
+  * ICMP (proto=1) -> Queue 1, Flow Priority 20
+  * UDP (proto=17)  -> Queue 1, Flow Priority 20
+  * TCP (proto=6)   -> Queue 2, Flow Priority 10
+  * ARP             -> Default forwarding, Flow Priority 5
+  * Table-miss      -> Controller, Flow Priority 0
+- Path: controller/smart_qos.py, results/flow_rules.txt
+
+Criterion 5: Queue Action Ordering
+- Result: PASS
+- Evidence: OFPActionSetQueue is prepended before OFPActionOutput in flow mods
+- Path: controller/smart_qos.py, results/smart_qos_final_flows.txt
+
+Criterion 6: OpenFlow Telemetry Collection
+- Result: PASS
+- Evidence: Active flow counters and EWMA throughput sampled every 5s; queue stats handler present
+- Path: results/flow_telemetry.csv
+
+Criterion 7: Linux HTB QoS Configuration
+- Result: PASS
+- Evidence: Verified live via tc -s class show dev s1-eth1 and s1-eth2:
+  * Root rate: 10 Mbps (rate 10Mbit ceil 10Mbit)
+  * Queue 1 (High Priority): min 6 Mbps, max 8 Mbps (rate 6Mbit ceil 8Mbit)
+  * Queue 2 (Normal Priority): min 1 Mbps, default max 4 Mbps (rate 1Mbit ceil 4Mbit)
+- Path: results/final_verification/qos_tc_classes.txt
+
+Criterion 8: Dynamic QoS Rate Adaptation (Surge: 4 -> 8 Mbps)
+- Result: PASS
+- Evidence: Queue 2 max rate expanded to 8 Mbps when demand >= 2.5 Mbps for 2 samples:
+  * 2026-10-24T11:50:35: INCREASE_TO_8_MBPS
+  * 2026-10-24T22:02:58: INCREASE_TO_8_MBPS
+  * 2026-10-24T23:17:10: INCREASE_TO_8_MBPS
+- Path: results/dynamic_qos_events.csv, results/dynamic_qos_samples.csv
+
+Criterion 9: Dynamic QoS Rate Adaptation (Restoration: 8 -> 4 Mbps)
+- Result: PASS
+- Evidence: Queue 2 max rate returned to 4 Mbps when demand <= 0.5 Mbps for 3 samples:
+  * 2026-10-24T11:51:19: RESTORE_TO_4_MBPS
+  * 2026-10-24T22:03:33: RESTORE_TO_4_MBPS
+  * 2026-10-24T23:18:05: RESTORE_TO_4_MBPS
+- Path: results/dynamic_qos_events.csv, results/dynamic_qos_samples.csv
+
+Criterion 10: Initial Shaped TCP Throughput
+- Result: PASS
+- Evidence: 30-second iperf3 TCP transfer under Queue 2 (4 Mbps limit):
+  * Sender throughput: 4.44 Mbps (tcp_test.log) / 4.24 Mbps (qos_tcp_load.log)
+  * Receiver throughput: 3.83 Mbps
+  * Retransmissions: 0
+- Path: results/tcp_test.log, results/qos_tcp_load.log
+
+Criterion 11: Adapted Shaped TCP Throughput
+- Result: PASS
+- Evidence: 30-second iperf3 TCP transfer under Queue 2 (8 Mbps limit):
+  * Sender throughput: 6.70 Mbps
+  * Receiver throughput: 6.22 Mbps
+  * Retransmissions: 0
+- Path: results/experiment_summary.txt.pre_final
+
+Criterion 12: Throughput Improvement Calculation
+- Result: PASS
+- Evidence: ((6.22 - 3.83) / 3.83) * 100 = +62.40% receiver throughput gain
+- Path: results/experiment_summary.txt
+
+Criterion 13: High-Priority Latency Under Concurrent TCP Load
+- Result: PASS
+- Evidence: 150 ICMP probes during concurrent 30s TCP iperf3 link saturation:
+  * Probes sent/received: 150 / 150
+  * Packet loss: 0.0%
+  * Min RTT: 0.044 ms
+  * Avg RTT: 0.135 ms
+  * Max RTT: 3.884 ms
+  * mdev: 0.309 ms
+- Path: results/qos_ping_under_load.log
+
+Criterion 14: Telemetry CSV Structure & Data Integrity
+- Result: PASS
+- Evidence: Valid CSV headers, consistent ISO timestamps, monotonic byte counts
+- Path: results/flow_telemetry.csv, results/dynamic_qos_samples.csv, results/dynamic_qos_events.csv
+
+Criterion 15: Graph Accuracy & Data Provenance
+- Result: PASS
+- Evidence: All 4 figures generated at 300 DPI from real raw data with zero hardcoded estimates
+- Path: results/graphs/, results/final_verification/graphs/
+
+Criterion 16: Reproducibility & Teardown
+- Result: PASS
+- Evidence: 10-step execution, verification, and cleanup workflow documented in README.md
+- Path: README.md, scripts/configure_qos.sh, scripts/remove_qos.sh
+
+================================================================================
+3. STATISTICAL SUMMARY
+================================================================================
+- Initial Receiver Throughput: 3.83 Mbps
+- Adapted Receiver Throughput: 6.22 Mbps
+- Receiver Throughput Gain: +62.40%
+- Concurrent ICMP Probe Count: 150
+- Concurrent ICMP Packet Loss: 0.0%
+- Concurrent ICMP Average RTT: 0.135 ms
+- Dynamic Transitions Demonstrated: 4 -> 8 -> 4 Mbps (3 distinct cycles verified)
+
+================================================================================
+4. CONCLUSION
+================================================================================
+FINAL IMPLEMENTATION VERIFICATION PASSED. The Smart QoS SDN project satisfies
+its defined implementation acceptance criteria and is ready for the documentation
+phase.
