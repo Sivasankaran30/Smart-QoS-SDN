@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Smart QoS Management Using Software-Defined Networking (SDN)
 
 An OpenFlow 1.3-based Software-Defined Networking (SDN) Quality of Service (QoS) management architecture implemented with the Ryu controller, Mininet virtual network emulator, and Open vSwitch (OVS) with Linux HTB traffic control.
@@ -184,3 +185,4 @@ sudo ./scripts/remove_qos.sh
    ```bash
    sudo mn -c
    ```
+
